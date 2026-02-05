@@ -6,12 +6,17 @@ import { anonymize } from '../../../utils/anonymize';
 import { Logo } from '../../common/Logo/Logo';
 
 export function Header() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isGuest, enterGuestMode, exitGuestMode } = useAuth();
   const navigate = useNavigate();
 
   async function handleSignOut() {
     await signOut();
     navigate('/login');
+  }
+
+  function handleGuestMode() {
+    enterGuestMode();
+    navigate('/listen');
   }
 
   return (
@@ -46,6 +51,30 @@ export function Header() {
                 <FiLogOut className="w-5 h-5" />
               </button>
             </div>
+          ) : isGuest ? (
+            <div className="flex items-center gap-4">
+              <span className="px-4 py-2 text-yellow-400 text-sm">
+                游客模式
+              </span>
+              <Link
+                to="/login"
+                className="px-4 py-2 text-mystic-500 hover:text-mystic-400 transition-colors"
+              >
+                登录
+              </Link>
+              <Link
+                to="/register"
+                className="px-4 py-2 bg-mystic-500 hover:bg-mystic-600 rounded-lg transition-colors"
+              >
+                注册
+              </Link>
+              <button
+                onClick={exitGuestMode}
+                className="px-4 py-2 text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                退出游客
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-4">
               <Link
@@ -60,6 +89,12 @@ export function Header() {
               >
                 注册
               </Link>
+              <button
+                onClick={handleGuestMode}
+                className="px-4 py-2 border border-mystic-500 text-mystic-500 hover:bg-mystic-500/10 rounded-lg transition-colors"
+              >
+                游客浏览
+              </button>
             </div>
           )}
         </div>

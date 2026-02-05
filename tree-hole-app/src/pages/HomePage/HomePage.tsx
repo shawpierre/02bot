@@ -6,9 +6,9 @@ import { FiMessageCircle, FiHeadphones, FiShield, FiHeart, FiTrendingUp } from '
 import { FireflyBackground } from '../../components/common/FireflyBackground/FireflyBackground';
 
 export function HomePage() {
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
 
-  if (!user) {
+  if (!user && !isGuest) {
     return (
       <div className="min-h-screen pt-16">
         {/* Hero Section */}
@@ -88,49 +88,67 @@ export function HomePage() {
       <div className="absolute inset-0 opacity-30">
         <FireflyBackground />
       </div>
-      
+
       <Container className="py-12 relative z-10">
         <h1 className="text-4xl font-bold text-center mb-12">
           欢迎回到<span className="text-gradient">树洞世界</span>
+          {isGuest && <span className="ml-4 text-yellow-400 text-lg">(游客模式)</span>}
         </h1>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Link
-            to="/confess"
-            className="glassmorphism p-8 rounded-2xl hover:scale-105 transition-all hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] group"
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FiMessageCircle className="w-8 h-8 text-green-500" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">倾诉树洞</h2>
-                <p className="text-gray-400 text-sm">分享你的秘密</p>
-              </div>
+        {isGuest ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="glassmorphism p-8 rounded-2xl mb-8 text-center">
+              <p className="text-gray-300 mb-4">
+                作为游客，你可以浏览和倾听他人的秘密，但不能发布秘密或获得点数
+              </p>
+              <Link
+                to="/listen"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-mystic-500 hover:bg-mystic-600 rounded-lg transition-colors"
+              >
+                <FiHeadphones className="w-5 h-5" />
+                开始倾听
+              </Link>
             </div>
-            <p className="text-gray-300">
-              匿名倾诉你的秘密，设定点数价格，当有人倾听时获得温暖的回报
-            </p>
-          </Link>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Link
+              to="/confess"
+              className="glassmorphism p-8 rounded-2xl hover:scale-105 transition-all hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] group"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FiMessageCircle className="w-8 h-8 text-green-500" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">倾诉树洞</h2>
+                  <p className="text-gray-400 text-sm">分享你的秘密</p>
+                </div>
+              </div>
+              <p className="text-gray-300">
+                匿名倾诉你的秘密，设定点数价格，当有人倾听时获得温暖的回报
+              </p>
+            </Link>
 
-          <Link
-            to="/listen"
-            className="glassmorphism p-8 rounded-2xl hover:scale-105 transition-all hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] group"
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FiHeadphones className="w-8 h-8 text-blue-500" />
+            <Link
+              to="/listen"
+              className="glassmorphism p-8 rounded-2xl hover:scale-105 transition-all hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] group"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FiHeadphones className="w-8 h-8 text-blue-500" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">倾听树洞</h2>
+                  <p className="text-gray-400 text-sm">发现他人的故事</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold">倾听树洞</h2>
-                <p className="text-gray-400 text-sm">发现他人的故事</p>
-              </div>
-            </div>
-            <p className="text-gray-300">
-              随机发现一个树洞秘密，选择是否付费支持，给予温暖的评论
-            </p>
-          </Link>
-        </div>
+              <p className="text-gray-300">
+                随机发现一个树洞秘密，选择是否付费支持，给予温暖的评论
+              </p>
+            </Link>
+          </div>
+        )}
       </Container>
     </div>
   );

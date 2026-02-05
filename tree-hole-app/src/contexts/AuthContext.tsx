@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User } from '../types/user';
 import { supabase } from '../services/supabase';
 import { signUp, signIn, signOut, getCurrentUser, updateProfile, SignUpParams, SignInParams } from '../services/authService';
@@ -7,9 +8,12 @@ import { useToast } from './ToastContext';
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
+  isGuest: boolean;
   signUp: (params: SignUpParams) => Promise<void>;
   signIn: (params: SignInParams) => Promise<void>;
   signOut: () => Promise<void>;
+  enterGuestMode: () => void;
+  exitGuestMode: () => void;
   updateProfile: (nickname: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -19,7 +23,9 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   // Load user on mount
   useEffect(() => {
@@ -29,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         await loadUser();
+        setIsGuest(false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
@@ -66,9 +73,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     await signOut();
     setUser(null);
+    setIsGuest(false);
     showToast('info', '已退出登录');
     setLoading(false);
   }
+
+  function enterGuestMode() {
+    setIsGuest(true);
+    sessionStorage.setItem('guest_mode', 'true');
+    showToast('info', '已进入游客模式，无法获得点数');
+  }
+
+  function exitGuestMode() {
+    setIsGuest(false);
+    sessionStorage.removeItem('guest_mode');
+    navigate('/login');
+  }
+
+  useEffect(() => {
+    const guestMode = sessionStorage.getItem('guest_mode');
+    if (guestMode === 'true') {
+      setIsGuest(true);
+    }
+  }, []);
 
   async function handleUpdateProfile(nickname: string) {
     setLoading(true);
@@ -87,9 +114,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         loading,
+        isGuest,
         signUp: handleSignUp,
         signIn: handleSignIn,
         signOut: handleSignOut,
+        enterGuestMode,
+        exitGuestMode,
         updateProfile: handleUpdateProfile,
         refreshUser,
       }}

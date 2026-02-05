@@ -16,6 +16,7 @@ import { formatRelativeTime } from '../../utils/formatters';
 import { validateContent } from '../../utils/contentFilter';
 import { MAX_COMMENT_LENGTH } from '../../utils/constants';
 import { FiMessageCircle, FiEye } from 'react-icons/fi';
+import { Button } from '../../components/common/Button/Button';
 
 export function SecretDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +24,7 @@ export function SecretDetailPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -48,6 +49,12 @@ export function SecretDetailPage() {
   }
 
   async function handleCommentSubmit(content: string) {
+    if (isGuest) {
+      showToast('info', '请登录后发表评论');
+      navigate('/login');
+      return;
+    }
+
     if (!user || !secret) return;
 
     const validation = validateContent(content, MAX_COMMENT_LENGTH);
@@ -139,7 +146,15 @@ export function SecretDetailPage() {
               评论 ({comments.length})
             </h2>
 
-            {user && <CommentForm onSubmit={handleCommentSubmit} />}
+            {user && !isGuest && <CommentForm onSubmit={handleCommentSubmit} />}
+            {isGuest && (
+              <div className="glassmorphism p-4 rounded-lg text-center">
+                <p className="text-gray-400 mb-2">登录后即可发表评论</p>
+                <Button variant="primary" onClick={() => navigate('/login')}>
+                  立即登录
+                </Button>
+              </div>
+            )}
 
             <CommentList comments={comments} />
           </div>

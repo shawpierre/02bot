@@ -23,16 +23,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Loading fullscreen />;
   }
 
-  if (!user) {
+  if (!user && !isGuestMode()) {
     return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
 }
 
-// Public Route Component (redirect if logged in)
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+// Guest Route Component (redirect if logged in)
+function GuestRoute({ children }: { children: React.ReactNode }) {
+  const { user, isGuest, loading } = useAuth();
 
   if (loading) {
     return <Loading fullscreen />;
@@ -45,6 +45,11 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Check if current mode is guest
+function isGuestMode(): boolean {
+  return sessionStorage.getItem('guest_mode') === 'true';
+}
+
 function AppRoutes() {
   return (
     <>
@@ -54,17 +59,17 @@ function AppRoutes() {
         <Route
           path="/login"
           element={
-            <PublicRoute>
+            <GuestRoute>
               <LoginPage />
-            </PublicRoute>
+            </GuestRoute>
           }
         />
         <Route
           path="/register"
           element={
-            <PublicRoute>
+            <GuestRoute>
               <RegisterPage />
-            </PublicRoute>
+            </GuestRoute>
           }
         />
         <Route

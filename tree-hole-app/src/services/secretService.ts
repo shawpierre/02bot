@@ -27,15 +27,11 @@ export async function createSecret(userId: string, dto: CreateSecretDto): Promis
   return data;
 }
 
-export async function getRandomSecret(userId: string): Promise<Secret | null> {
-  // Get a random secret that user hasn't viewed
+export async function getRandomSecret(userId: string | null): Promise<Secret | null> {
   const { data, error } = await supabase
     .from('secrets')
     .select('*')
-    .eq('status', 'active')
-    .neq('user_id', userId)
-    .not('id', 'in', `(SELECT secret_id FROM user_secret_views WHERE user_id = '${userId}')`)
-    .limit(50);
+    .eq('status', 'active');
 
   if (error) {
     console.error('Get random secret error:', error);

@@ -17,7 +17,7 @@ export function ListenPage() {
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const { wallet, refetch: refetchWallet } = useWallet();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -27,15 +27,19 @@ export function ListenPage() {
   }, [user]);
 
   async function loadRandomSecret() {
-    if (!user) return;
-
     setLoading(true);
-    const randomSecret = await getRandomSecret(user.id);
+    const randomSecret = await getRandomSecret(null);
     setSecret(randomSecret);
     setLoading(false);
   }
 
   async function handlePayment() {
+    if (isGuest) {
+      showToast('info', '游客无法支付，请登录后体验完整功能');
+      navigate('/login');
+      return;
+    }
+
     if (!user || !secret || !wallet) return;
 
     if (wallet.balance < secret.price) {
@@ -96,22 +100,35 @@ export function ListenPage() {
               </div>
 
               <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  onClick={loadRandomSecret}
-                  className="flex-1"
-                >
-                  <FiRefreshCw className="w-5 h-5 mr-2" />
-                  换一个
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setShowPaymentModal(true)}
-                  className="flex-1"
-                >
-                  支付查看
-                </Button>
-              </div>
+                  <Button
+                    variant="ghost"
+                    onClick={loadRandomSecret}
+                    className="flex-1"
+                  >
+                    <FiRefreshCw className="w-5 h-5 mr-2" />
+                    换一个
+                  </Button>
+                  {isGuest ? (
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        showToast('info', '请登录后支付查看完整内容');
+                        navigate('/login');
+                      }}
+                      className="flex-1"
+                    >
+                      登录查看完整
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      onClick={() => setShowPaymentModal(true)}
+                      className="flex-1"
+                    >
+                      支付查看
+                    </Button>
+                  )}
+                </div>
             </div>
           ) : (
             <div className="glassmorphism rounded-2xl p-12 text-center shadow-lg">
