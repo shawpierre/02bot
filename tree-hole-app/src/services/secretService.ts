@@ -1,50 +1,28 @@
 import { supabase } from './supabase';
 import { Secret, CreateSecretDto } from '../types/secret';
 import { PREVIEW_LENGTH } from '../utils/constants';
+import { stories } from '../data/stories';
 
-export async function createSecret(userId: string, dto: CreateSecretDto): Promise<Secret> {
-  const preview = dto.content.length > PREVIEW_LENGTH
-    ? dto.content.substring(0, PREVIEW_LENGTH) + '...'
-    : dto.content;
-
-  const { data, error } = await supabase
-    .from('secrets')
-    .insert({
-      user_id: userId,
-      content: dto.content,
-      preview,
-      price: dto.price,
-      status: 'active',
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Create secret error:', error);
-    throw error;
-  }
-
-  return data;
-}
-
+// Get a random secret from local stories data
 export async function getRandomSecret(userId: string | null): Promise<Secret | null> {
-  const { data, error } = await supabase
-    .from('secrets')
-    .select('*')
-    .eq('status', 'active');
-
-  if (error) {
-    console.error('Get random secret error:', error);
+  if (!stories || stories.length === 0) {
     return null;
   }
 
-  if (!data || data.length === 0) {
-    return null;
-  }
+  const randomIndex = Math.floor(Math.random() * stories.length);
+  const story = stories[randomIndex];
 
-  // Pick a random one from the results
-  const randomIndex = Math.floor(Math.random() * data.length);
-  return data[randomIndex];
+  return {
+    id: story.id,
+    user_id: 'system',
+    content: story.content,
+    preview: story.preview,
+    price: story.price,
+    status: 'active',
+    view_count: story.view_count,
+    created_at: story.created_at,
+    type: story.type
+  };
 }
 
 export async function getSecretById(secretId: string): Promise<Secret | null> {
