@@ -24,21 +24,14 @@ export interface SignUpByEmailParams {
  */
 export async function signUp({ username, email, password, nickname }: SignUpParams) {
   // Check if username already exists
-  const { data: existingUser, error: checkError } = await supabase
+  const { data: existingUser } = await supabase
     .from('users')
     .select('id')
     .eq('username', username)
-    .single();
+    .maybeSingle();
 
-  // If user exists and we got data, throw error
   if (existingUser) {
     throw new Error('用户名已被占用，请尝试其他用户名');
-  }
-
-  // If error is not "not found", something went wrong
-  if (checkError && !checkError.message.includes('PGRST116')) {
-    console.error('Check username error:', checkError);
-    throw new Error('检查用户名失败，请稍后重试');
   }
 
   // Create auth user with email (or dummy email if not provided)
@@ -95,9 +88,14 @@ export async function signIn({ username, password }: SignInParams) {
     .from('users')
     .select('id, username, email')
     .eq('username', username)
-    .single();
+    .maybeSingle();
 
-  if (userError || !user) {
+  if (userError) {
+    console.error('Find user error:', userError);
+    throw new Error('查询用户失败，请稍后重试');
+  }
+
+  if (!user) {
     throw new Error('用户名不存在');
   }
 

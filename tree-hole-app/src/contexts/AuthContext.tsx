@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../types/user';
 import { supabase } from '../services/supabase';
@@ -26,16 +26,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isGuest, setIsGuest] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const isInitialLoad = useRef(true);
 
   // Load user on mount
   useEffect(() => {
-    loadUser();
+    const loadUserData = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
+      } finally {
+        setLoading(false);
+        isInitialLoad.current = false;
+      }
+    };
+
+    loadUserData();
 
     // Listen to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        await loadUser();
-        setIsGuest(false);
+        // Only handle auth state change if not initial load
+        if (!isInitialLoad.current) {
+          try {
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+          } catch (error) {
+            console.error('Error loading user on auth change:', error);
+          }
+        }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
@@ -46,42 +66,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  async function loadUser() {
-    setLoading(true);
-    const currentUser = await getCurrentUser();
-    setUser(currentUser);
-    setLoading(false);
-  }
-
   async function handleSignUp(params: SignUpParams) {
-    setLoading(true);
-    await signUp(params);
-    await loadUser();
-    showToast('success', '注册成功！欢迎来到树洞');
-    setLoading(false);
+    try {
+      setLoading(true);
+      await signUp(params);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      showToast('success', '注册成功！欢迎来到树洞');
+      navigate('/');
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      showToast('error', error.message || '注册失败，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSignIn(params: SignInParams) {
-    setLoading(true);
-    await signIn(params);
-    await loadUser();
-    showToast('success', '登录成功！');
-    setLoading(false);
+    try {
+      setLoading(true);
+      await signIn(params);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      showToast('success', '登录成功！');
+      navigate('/');
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      showToast('error', error.message || '登录失败，请检查用户名和密码');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSignOut() {
-    setLoading(true);
-    await signOut();
-    setUser(null);
-    setIsGuest(false);
-    showToast('info', '已退出登录');
-    setLoading(false);
+    try {
+      setLoading(true);
+      await signOut();
+      setUser(null);
+      setIsGuest(false);
+      showToast('info', '已退出登录');
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function enterGuestMode() {
     setIsGuest(true);
     sessionStorage.setItem('guest_mode', 'true');
     showToast('info', '已进入游客模式，无法获得点数');
+    navigate('/listen');
   }
 
   function exitGuestMode() {
@@ -98,15 +134,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function handleUpdateProfile(nickname: string) {
-    setLoading(true);
-    await updateProfile(nickname);
-    await loadUser();
-    showToast('success', '昵称已更新');
-    setLoading(false);
+    try {
+      setLoading(true);
+      await updateProfile(nickname);
+      await loadUserData();
+      showToast('success', '昵称已更新');
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      showToast('error', error.message || '更新失败');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadUserData() {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
   }
 
   async function refreshUser() {
-    await loadUser();
+    await loadUserData();
   }
 
   return (
