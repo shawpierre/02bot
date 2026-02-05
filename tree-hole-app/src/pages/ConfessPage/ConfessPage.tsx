@@ -39,7 +39,7 @@ export function ConfessPage() {
         showToast('success', '秘密已发布到树洞');
         navigate('/');
       })
-      .catch((error) => {
+      .catch((error: any) => {
         showToast('error', '发布失败：' + (error.message || '请稍后重试'));
       })
       .finally(() => {

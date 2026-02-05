@@ -9,6 +9,7 @@ export interface Secret {
   income: number;
   status: 'active' | 'deleted';
   created_at: string;
+  type?: string;
 }
 
 export interface CreateSecretDto {

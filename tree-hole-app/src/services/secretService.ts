@@ -3,7 +3,30 @@ import { Secret, CreateSecretDto } from '../types/secret';
 import { PREVIEW_LENGTH } from '../utils/constants';
 import { stories } from '../data/stories';
 
-// Get a random secret from local stories data
+export async function createSecret(userId: string, dto: CreateSecretDto): Promise<Secret | null> {
+  const { data, error } = await supabase
+    .from('secrets')
+    .insert({
+      user_id: userId,
+      content: dto.content,
+      preview: dto.content.slice(0, PREVIEW_LENGTH),
+      price: dto.price,
+      view_count: 0,
+      comment_count: 0,
+      income: 0,
+      status: 'active'
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Create secret error:', error);
+    throw error;
+  }
+
+  return data;
+}
+
 export async function getRandomSecret(userId: string | null): Promise<Secret | null> {
   if (!stories || stories.length === 0) {
     return null;
@@ -20,6 +43,8 @@ export async function getRandomSecret(userId: string | null): Promise<Secret | n
     price: story.price,
     status: 'active',
     view_count: story.view_count,
+    comment_count: 0,
+    income: 0,
     created_at: story.created_at,
     type: story.type
   };
