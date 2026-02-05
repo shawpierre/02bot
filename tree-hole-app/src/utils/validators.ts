@@ -44,3 +44,12 @@ export function isValidPrice(price: number, min: number, max: number): boolean {
 export function isValidNickname(nickname: string): boolean {
   return nickname.length >= 2 && nickname.length <= 20;
 }
+
+/**
+ * Validate username format
+ * 3-20 characters, letters, numbers, and underscores only
+ */
+export function isValidUsername(username: string): boolean {
+  const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+  return usernameRegex.test(username);
+}

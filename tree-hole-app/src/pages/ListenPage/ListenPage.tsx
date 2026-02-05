@@ -85,8 +85,8 @@ export function ListenPage() {
           {secret ? (
             <div className="glassmorphism rounded-2xl p-8 shadow-lg">
               <div className="mb-6">
-                <p className="text-lg text-gray-300 leading-relaxed mb-4">
-                  {secret.preview}
+                <p className="text-lg text-gray-300 leading-relaxed mb-4 whitespace-pre-wrap">
+                  {secret.content}
                 </p>
                 <div className="flex items-center justify-between text-sm text-gray-400">
                   <span>作者：momo</span>
@@ -94,12 +94,8 @@ export function ListenPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-mystic-500/10 rounded-lg mb-6">
-                <span className="text-gray-300">解锁完整内容需要</span>
-                <span className="text-xl font-bold text-mystic-500">{secret.price} 点数</span>
-              </div>
-
-              <div className="flex gap-3">
+              {isGuest ? (
+                <div className="flex gap-3">
                   <Button
                     variant="ghost"
                     onClick={loadRandomSecret}
@@ -108,27 +104,40 @@ export function ListenPage() {
                     <FiRefreshCw className="w-5 h-5 mr-2" />
                     换一个
                   </Button>
-                  {isGuest ? (
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate('/login')}
+                    className="flex-1"
+                  >
+                    登录后打赏
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between p-4 bg-mystic-500/10 rounded-lg mb-6">
+                    <span className="text-gray-300">打赏作者</span>
+                    <span className="text-xl font-bold text-mystic-500">{secret.price} 点数</span>
+                  </div>
+
+                  <div className="flex gap-3">
                     <Button
-                      variant="primary"
-                      onClick={() => {
-                        showToast('info', '请登录后支付查看完整内容');
-                        navigate('/login');
-                      }}
+                      variant="ghost"
+                      onClick={loadRandomSecret}
                       className="flex-1"
                     >
-                      登录查看完整
+                      <FiRefreshCw className="w-5 h-5 mr-2" />
+                      换一个
                     </Button>
-                  ) : (
                     <Button
                       variant="primary"
                       onClick={() => setShowPaymentModal(true)}
                       className="flex-1"
                     >
-                      支付查看
+                      打赏查看
                     </Button>
-                  )}
-                </div>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="glassmorphism rounded-2xl p-12 text-center shadow-lg">

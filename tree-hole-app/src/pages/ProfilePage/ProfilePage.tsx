@@ -29,7 +29,7 @@ export function ProfilePage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold">{user?.nickname || 'momo'}</h1>
-                <p className="text-gray-400">树洞成员</p>
+                <p className="text-gray-400 text-sm">@{user?.username || 'unknown'}</p>
               </div>
             </div>
           </div>

@@ -5,14 +5,16 @@ import { useToast } from '../../contexts/ToastContext';
 import { Button } from '../../components/common/Button/Button';
 import { Input } from '../../components/common/Input/Input';
 import { FiMail, FiLock, FiUser } from 'react-icons/fi';
-import { isValidEmail, isValidPassword, isValidNickname, getPasswordStrength } from '../../utils/validators';
+import { isValidPassword, isValidNickname, isValidUsername } from '../../utils/validators';
 
 export function RegisterPage() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nickname, setNickname] = useState('');
   const [errors, setErrors] = useState<{
+    username?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -27,16 +29,20 @@ export function RegisterPage() {
   function validate() {
     const newErrors: typeof errors = {};
 
+    if (!username) {
+      newErrors.username = '请输入用户名';
+    } else if (!isValidUsername(username)) {
+      newErrors.username = '用户名需3-20位字母、数字或下划线';
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = '邮箱格式不正确';
+    }
+
     if (!nickname) {
       newErrors.nickname = '请输入昵称';
     } else if (!isValidNickname(nickname)) {
       newErrors.nickname = '昵称长度需在2-20字符之间';
-    }
-
-    if (!email) {
-      newErrors.email = '请输入邮箱';
-    } else if (!isValidEmail(email)) {
-      newErrors.email = '邮箱格式不正确';
     }
 
     if (!password) {
@@ -62,7 +68,7 @@ export function RegisterPage() {
 
     setLoading(true);
     
-    signUp({ email, password, nickname })
+    signUp({ username, email: email || undefined, password, nickname })
       .then(() => {
         navigate('/');
       })
@@ -74,13 +80,13 @@ export function RegisterPage() {
       });
   }
 
-  const passwordStrength = password ? getPasswordStrength(password) : null;
-  const strengthColor = {
+  const passwordStrength = password ? (password.length < 6 ? 'weak' : password.length < 10 ? 'medium' : 'strong') : null;
+  const strengthColor: Record<string, string> = {
     weak: 'text-red-500',
     medium: 'text-yellow-500',
     strong: 'text-green-500',
   };
-  const strengthText = {
+  const strengthText: Record<string, string> = {
     weak: '弱',
     medium: '中',
     strong: '强',
@@ -98,18 +104,27 @@ export function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
               type="text"
-              label="昵称"
-              placeholder="请输入昵称"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              error={errors.nickname}
+              label="用户名"
+              placeholder="设置用户名（3-20位）"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              error={errors.username}
               icon={<FiUser />}
             />
 
             <Input
+              type="text"
+              label="昵称"
+              placeholder="设置昵称（2-20位）"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              error={errors.nickname}
+            />
+
+            <Input
               type="email"
-              label="邮箱"
-              placeholder="请输入邮箱"
+              label="邮箱（选填）"
+              placeholder="用于找回账号"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={errors.email}

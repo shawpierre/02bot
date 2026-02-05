@@ -4,13 +4,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { Button } from '../../components/common/Button/Button';
 import { Input } from '../../components/common/Input/Input';
-import { FiMail, FiLock } from 'react-icons/fi';
-import { isValidEmail } from '../../utils/validators';
+import { FiUser, FiLock } from 'react-icons/fi';
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
   
   const { signIn } = useAuth();
@@ -20,10 +19,8 @@ export function LoginPage() {
   function validate() {
     const newErrors: typeof errors = {};
 
-    if (!email) {
-      newErrors.email = '请输入邮箱';
-    } else if (!isValidEmail(email)) {
-      newErrors.email = '邮箱格式不正确';
+    if (!username) {
+      newErrors.username = '请输入用户名';
     }
 
     if (!password) {
@@ -41,12 +38,12 @@ export function LoginPage() {
 
     setLoading(true);
     
-    signIn({ email, password })
+    signIn({ username, password })
       .then(() => {
         navigate('/');
       })
       .catch((error) => {
-        showToast('error', '登录失败：' + (error.message || '请检查邮箱和密码'));
+        showToast('error', '登录失败：' + (error.message || '请检查用户名和密码'));
       })
       .finally(() => {
         setLoading(false);
@@ -64,13 +61,13 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
-              type="email"
-              label="邮箱"
-              placeholder="请输入邮箱"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={errors.email}
-              icon={<FiMail />}
+              type="text"
+              label="用户名"
+              placeholder="请输入用户名"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              error={errors.username}
+              icon={<FiUser />}
             />
 
             <Input

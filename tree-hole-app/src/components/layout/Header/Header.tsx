@@ -41,7 +41,7 @@ export function Header() {
                 className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/5 transition-colors"
               >
                 <FiUser className="w-5 h-5" />
-                <span className="text-sm">{anonymize()}</span>
+                <span className="text-sm">{user?.nickname || 'momo'}</span>
               </Link>
 
               <button
